@@ -1,0 +1,38 @@
+service: presigned-s3
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: ap-south-1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:GetObject
+        - s3:ListBucket
+      Resource: 
+        - "arn:aws:s3:::aman-demo-private-bucket" # Replace with your S3 bucket name
+        - "arn:aws:s3:::aman-demo-private-bucket/*" # Replace with your S3 bucket name and /* for objects inside the bucket
+
+
+functions:
+  getS3presignedURL:
+    handler: handler.getS3presignedURL
+    environment:
+      BUCKET_NAME: !Ref privateUploadBucket
+    events:
+      - http:
+          path: getS3presignedURL
+          method: post
+
+resources:
+  Resources:
+    privateUploadBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: aman-demo-private-bucket
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: TRUE
+          BlockPublicPolicy: TRUE
+          IgnorePublicAcls: TRUE
+          RestrictPublicBuckets: TRUE
